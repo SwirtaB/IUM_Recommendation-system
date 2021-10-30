@@ -1,6 +1,6 @@
 # IUM_Recommendation-system
 
-Project within the subject IUM - Inzynieria uczenia maszynowego (Machine learning engineering). The scope of this project is to creat an adequate solution for given problem.
+Project within the subject IUM - Inżynieria uczenia maszynowego (Machine learning engineering). The scope of this project is to creat an adequate solution for given problem.
 
 ## Story time
 
