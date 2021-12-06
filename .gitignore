@@ -134,3 +134,6 @@ dmypy.json
 
 #Notebook cache
 .ipynb*
+
+#obsolete raports
+*.zip
