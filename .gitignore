@@ -127,3 +127,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#IDE specific
+.idea
+.vscode
+
+#Notebook cache
+.ipynb*
+
+#obsolete raports
+*.zip
