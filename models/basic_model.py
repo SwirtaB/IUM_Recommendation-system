@@ -1,6 +1,20 @@
 import pandas as pd
 import numpy as np
 
+separator = ';'
+newGroups = [
+    'Gry komputerowe', 'Gry na konsole', 'Sprzęt RTV', 'Komputery',
+    'Telefony i akcesoria'
+]
+
+
+def castCategoryPath(categoryPath):
+    categories = categoryPath.split(separator)
+    foundGroups = [group for group in newGroups if group in categories]
+    if len(foundGroups) != 1:
+        raise RuntimeError('wrong group cast: {}'.format(foundGroups))
+    return foundGroups[0]
+
 
 def calculate_raiting(raiting, popularity, minPopularity,
                       avgRaiting) -> pd.Series:
@@ -25,8 +39,10 @@ def preprocess_data(productsDF: pd.DataFrame,
                     sessionsDF: pd.DataFrame) -> pd.DataFrame:
     popularity = sessionsDF['product_id'].value_counts().rename_axis(
         'product_id').reset_index(name='count')
-    products = productsDF.drop(
-        columns=['product_name', 'category_path', 'price'])
+    products = productsDF.drop(columns=['product_name', 'price'])
+    products['category_path'] = products['category_path'].apply(
+        castCategoryPath)
+
     return pd.merge(products, popularity, how='inner', on='product_id')
 
 
