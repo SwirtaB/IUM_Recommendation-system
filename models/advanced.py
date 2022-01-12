@@ -3,6 +3,17 @@ import pandas as pd
 from sklearn.decomposition import TruncatedSVD
 from sklearn.cluster import KMeans
 
+"""
+    Advanced recommender generates predictions based on similar user groups.
+    
+    Based on interaction-matrix we can conclude, which users are similar,
+    or at least have similar interests.
+    After generating the interaction_matrix, dimensionality reduction is 
+    performed on it. 
+    After that, k-means clustering takes place in order to sign users to groups.
+    Finally, for each group, top n products from each category are taken depending 
+    on their popularity in this user group (popularity === amount of interactions). 
+"""
 
 NEW_GROUPS = [
     'Gry komputerowe',
@@ -49,6 +60,7 @@ class Recommender:
     def dump(self, user_to_group_fp: str, group_recommendations_fp: str):
         """
         Saves advanced model into two files for convenience with reading.
+
         In order to reduce it into single file, same clever function is needed
         to distinguish between 2 dictionaries.
 
