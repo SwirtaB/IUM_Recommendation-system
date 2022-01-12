@@ -16,16 +16,6 @@ from preprocessors import preprocessors
     on their popularity in this user group (popularity === amount of interactions). 
 """
 
-NEW_GROUPS = [
-    'Gry komputerowe',
-    'Gry na konsole',
-    'Sprzęt RTV',
-    'Komputery',
-    'Telefony i akcesoria'
-]
-
-SEPARATOR = ';'
-
 PRODUCTS_SPACE_DIMENSION = 10
 SVD_ITER_AMOUNT = 10
 
@@ -73,13 +63,6 @@ class Recommender:
         with open(group_recommendations_fp, 'w') as file:
             json.dump(self.group_recommendations, file, sort_keys=True, indent=4)
 
-
-def cast_category_path(category_path):
-    categories = category_path.split(SEPARATOR)
-    found_groups = [group for group in NEW_GROUPS if group in categories]
-    if len(found_groups) != 1:
-        raise RuntimeError('wrong group cast: {}'.format(found_groups))
-    return found_groups[0]
 
 #####################################################################
 # Code below is associated with building the advanced recommender.  #
