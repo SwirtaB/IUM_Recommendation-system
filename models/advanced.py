@@ -2,6 +2,7 @@ import json
 import pandas as pd
 from sklearn.decomposition import TruncatedSVD
 from sklearn.cluster import KMeans
+from preprocessors import preprocessors
 
 """
     Advanced recommender generates predictions based on similar user groups.
@@ -241,25 +242,10 @@ if __name__ == '__main__':
     productsDF = pd.read_json(productsDataPath, lines=True)
     sessionsDF = pd.read_json(sessionsDataPath, lines=True)
 
-    session_drop_columns = [
-        "timestamp",
-        "event_type",
-        "offered_discount",
-        "purchase_id",
-        "session_id"
-    ]
-    product_drop_columns = [
-        "price",
-        "product_name",
-        "user_rating"
-    ]
-
-    sessionsDF.drop(columns=session_drop_columns, inplace=True)
-    productsDF.drop(columns=product_drop_columns, inplace=True)
-
-    productsDF["category_path"] = productsDF["category_path"].apply(cast_category_path)
-
-    sessionsDF = sessionsDF.merge(productsDF, on="product_id")
+    sessionsDF, productsDF = preprocessors.preprocess_data_for_advanced_model(
+        sessions_df=sessionsDF,
+        products_df=productsDF
+    )
 
     recommender = build(sessionsDF, productsDF)
 

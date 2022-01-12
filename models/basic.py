@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import numpy as np
+from preprocessors import preprocessors
 
 """
     Basic model creates predictions based on score assigned to each product.
@@ -10,16 +11,6 @@ import numpy as np
     
     Score metric is based on the IMDB metric.   
 """
-
-# Constants associated with data pre-processing.
-NEW_GROUPS = [
-    'Gry komputerowe',
-    'Gry na konsole',
-    'Sprzęt RTV',
-    'Komputery',
-    'Telefony i akcesoria'
-]
-PATH_SEPARATOR = ';'
 
 
 class Recommender:
@@ -55,14 +46,6 @@ class Recommender:
             json.dump(self.recommendations, file)
 
 
-def _cast_category_path(category_path):
-    categories = category_path.split(PATH_SEPARATOR)
-    found_groups = [group for group in NEW_GROUPS if group in categories]
-    if len(found_groups) != 1:
-        raise RuntimeError('wrong group cast: {}'.format(found_groups))
-    return found_groups[0]
-
-
 ################################################################
 #  Code below is associated with building basic Recommender.   #
 ################################################################
@@ -73,13 +56,13 @@ def _calculate_score(rating, popularity, min_popularity, avg_rating) -> pd.Serie
             (min_popularity / (popularity + min_popularity)) * avg_rating)
 
 
-def _with_score(products_df: pd.DataFrame) -> pd.DataFrame:
+def _products_with_score(products_df: pd.DataFrame) -> pd.DataFrame:
     avg_rating = products_df['user_rating'].mean()
-    min_popularity = np.percentile(products_df['count'], 80)
+    min_popularity = np.percentile(products_df['popularity'], 80)
     # Deep copy because products df is modified and returned as the result.
-    products = products_df[products_df['count'] >= min_popularity].copy(deep=True)
+    products = products_df[products_df['popularity'] >= min_popularity].copy(deep=True)
     user_ratings = products['user_rating']
-    popularity = products['count']
+    popularity = products['popularity']
     products['score'] = _calculate_score(
         user_ratings,
         popularity,
@@ -90,18 +73,19 @@ def _with_score(products_df: pd.DataFrame) -> pd.DataFrame:
     return products
 
 
-def _preprocess_data(products_df: pd.DataFrame, sessions_df: pd.DataFrame) -> pd.DataFrame:
-    popularity = sessions_df['product_id'].value_counts().rename_axis('product_id').reset_index(name='count')
-    products = products_df.drop(columns=['product_name', 'price'])
-    products['category_path'] = products['category_path'].apply(_cast_category_path)
-    return pd.merge(products, popularity, how='inner', on='product_id')
+def _assign_popularity_to_products(
+        sessions_df: pd.DataFrame,
+        products_df: pd.DataFrame
+        ) -> pd.DataFrame:
+    popularity = sessions_df['product_id'].value_counts().rename_axis('product_id').reset_index(name='popularity')
+    return pd.merge(products_df, popularity, how='inner', on='product_id')
 
 
 def _best_list_products(scored_products: pd.DataFrame, n: int = 10) -> list:
     return scored_products.sort_values('score', ascending=False).head(n=n)["product_id"].to_list()
 
 
-def build(products_df: pd.DataFrame, sessions_df: pd.DataFrame) -> Recommender:
+def build(sessions_df: pd.DataFrame, products_df: pd.DataFrame) -> Recommender:
     """
     Builds basic model based on provides sessions and products DataFrames.
 
@@ -112,8 +96,8 @@ def build(products_df: pd.DataFrame, sessions_df: pd.DataFrame) -> Recommender:
     :param sessions_df: pd.DataFrame containing sessions information.
     :return: basic Recommender.
     """
-    preprocessed = _preprocess_data(products_df, sessions_df)
-    products_with_scores = _with_score(preprocessed)
+    products_with_popularity = _assign_popularity_to_products(sessions_df, products_df)
+    products_with_scores = _products_with_score(products_with_popularity)
     recommendations = _best_list_products(products_with_scores)
     return Recommender(
         recommendations=recommendations
@@ -137,9 +121,16 @@ def from_file(recommendations_fp: str) -> Recommender:
 if __name__ == "__main__":
     productsDataPath = '../notebooks/data/v2/products.jsonl'
     sessionsDataPath = '../notebooks/data/v2/sessions.jsonl'
+
     sessionsDF = pd.read_json(sessionsDataPath, lines=True)
     productsDF = pd.read_json(productsDataPath, lines=True)
-    recommender = build(productsDF, sessionsDF)
+
+    sessionsDF, productsDF = preprocessors.preprocess_data_for_basic_model(
+        sessions_df=sessionsDF,
+        products_df=productsDF
+    )
+
+    recommender = build(sessionsDF, productsDF)
 
     print("Recommender constructed without error is read to use...")
     print('Sample recommendation for user 102 browsing product with category path "Gry na konsole"...')
