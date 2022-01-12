@@ -26,12 +26,12 @@ class Recommender:
         """
         self.recommendations = recommendations
 
-    def recommend(self, unused_user_id: int, unused_category: str) -> list:
+    def recommend(self, user_id: int, category: str) -> list:
         """
         Generates recommendation for the user.
 
-        :param unused_user_id: this parameter is not used.
-        :param unused_category: this parameter is not used.
+        :param user_id: this parameter is not used.
+        :param category: this parameter is not used.
         :return: list of products recommended to the user.
         """
         return self.recommendations
