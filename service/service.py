@@ -1,5 +1,8 @@
 from flask import Flask, request
 from flask_restful import Resource, Api
+from datetime import datetime
+from uuid import uuid4
+from logger import Logger
 from models.advanced import from_files as advanced_from_files
 from models.basic import from_file as basic_from_file
 
@@ -7,6 +10,8 @@ basic_recommender_fp = "../models/basic/recommendations.json"
 
 advanced_user_to_group_fp = "../models/advanced/user_to_group.json"
 advanced_group_recommendations_fp = "../models/advanced/group_recommendations.json"
+
+logs_fp = "logs/logs.txt"
 
 ############################################################################
 # NOTE                                                                     #
@@ -24,6 +29,8 @@ basic_model = basic_from_file(
     recommendations_fp=basic_recommender_fp
 )
 
+logger = Logger(logging_fp=logs_fp)
+
 # Setting up the flask application.
 app = Flask(__name__)
 api = Api(app)
@@ -32,12 +39,18 @@ api = Api(app)
 class Recommender(Resource):
     @staticmethod
     def get():
+        response = {
+            "id": str(uuid4()),
+            "date": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
         try:
             query_param_dict = Recommender.__query_args()
         except RuntimeError as err:
-            return {
-                "message": str(err)
-            }, 400
+            response["message"] = str(err)
+            return Recommender.__send_response(response, 400)
+
+        response["user_id"] = int(query_param_dict["user_id"])
+        response["model"] = query_param_dict["model"]
 
         if query_param_dict["model"] == "advanced":
             recommendations = advanced_model.recommend(
@@ -50,13 +63,11 @@ class Recommender(Resource):
                 category=str(query_param_dict["category_path"])
             )
         else:
-            return {
-                "message": "unknown model type!"
-            }, 400
+            response["message"] = "unknown model type!"
+            return Recommender.__send_response(response, 400)
 
-        return {
-            "recommendations": recommendations
-        }
+        response["recommendations"] = recommendations
+        return Recommender.__send_response(response)
 
     @staticmethod
     def __query_args() -> dict:
@@ -66,6 +77,11 @@ class Recommender(Resource):
             if key not in args:
                 raise RuntimeError("{} value is missing!".format(key))
         return args.to_dict()
+
+    @staticmethod
+    def __send_response(response, code: int = 200):
+        logger.log(response)
+        return response, code
 
 
 api.add_resource(Recommender, '/')
