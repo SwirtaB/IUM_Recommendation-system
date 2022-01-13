@@ -45,6 +45,13 @@ class Recommender:
         with (open(recommendations_fp, 'w')) as file:
             json.dump(self.recommendations, file)
 
+    @staticmethod
+    def name():
+        """
+        Function returns the name of the recommender.
+        """
+        return "Basic"
+
 
 ################################################################
 #  Code below is associated with building basic Recommender.   #

@@ -74,3 +74,11 @@ def preprocess_data_for_basic_model(
         new_sessions,
         new_products
     )
+
+
+def preprocess_data_for_predictions(
+        sessions_df: pd.DataFrame,
+        products_df: pd.DataFrame) -> pd.DataFrame:
+    result = sessions_df.merge(products_df, on="product_id")
+    result["category_path"] = result["category_path"].apply(_cast_category_path)
+    return result

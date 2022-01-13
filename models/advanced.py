@@ -63,6 +63,13 @@ class Recommender:
         with open(group_recommendations_fp, 'w') as file:
             json.dump(self.group_recommendations, file, sort_keys=True, indent=4)
 
+    @staticmethod
+    def name():
+        """
+        Function returns the name of the recommender.
+        """
+        return "Advanced"
+
 
 #####################################################################
 # Code below is associated with building the advanced recommender.  #
