@@ -165,7 +165,7 @@ def _perform_grouping(interaction_matrix: pd.DataFrame) -> pd.DataFrame:
 def build(
         sessions_df: pd.DataFrame,
         products_df: pd.DataFrame
-        ) -> (dict, dict):
+        ) -> Recommender:
     """
         Function builds advanced model from sessions and products DataFrames.
 

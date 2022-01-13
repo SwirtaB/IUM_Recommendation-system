@@ -1,3 +1,4 @@
+import typing
 import pandas as pd
 
 NEW_GROUPS = [
@@ -44,7 +45,7 @@ def _preprocess_sessions_for_advanced_model(sessions_df: pd.DataFrame) -> pd.Dat
 def preprocess_data_for_advanced_model(
         sessions_df: pd.DataFrame,
         products_df: pd.DataFrame
-        ) -> (pd.DataFrame, pd.DataFrame):
+        ) -> typing.Tuple[pd.DataFrame, pd.DataFrame]:
     return (
         _preprocess_sessions_for_advanced_model(sessions_df=sessions_df),
         _preprocess_products_for_advanced_model(products_df=products_df)
@@ -54,7 +55,7 @@ def preprocess_data_for_advanced_model(
 def preprocess_data_for_basic_model(
         sessions_df: pd.DataFrame,
         products_df: pd.DataFrame
-        ) -> (pd.DataFrame, pd.DataFrame):
+        ) -> typing.Tuple[pd.DataFrame, pd.DataFrame]:
     product_drop_columns = [
         "product_name",
         "category_path",
