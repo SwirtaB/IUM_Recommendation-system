@@ -1,5 +1,8 @@
 import random
 import pandas as pd
+from preprocessors import preprocessors
+from basic import build as build_basic
+from advanced import build as build_advanced
 
 
 # Picks sessions having the size equal to or greater than n_min value.
@@ -61,5 +64,12 @@ if __name__ == "__main__":
     productsDF = pd.read_json(products_df_fp, lines=True)
 
     train_df, test_df = _train_test_split_sessions_data(sessions_df=sessionsDF)
-    print(train_df.shape[0])
-    print(test_df.shape[0])
+
+    print("Beginning to build models...")
+
+    basic_train_set, basic_products_set = preprocessors.preprocess_data_for_basic_model(train_df, productsDF)
+    basic_recommender = build_basic(basic_train_set, basic_products_set)
+    print("Built basic recommender without errors...")
+    adv_train_set, adv_products_set = preprocessors.preprocess_data_for_advanced_model(train_df, productsDF)
+    advanced_recommender = build_advanced(adv_train_set, adv_products_set)
+    print("Built advanced recommender without errors...")
